@@ -1,0 +1,9 @@
+.history
+boot
+*.tar.gz
+dist
+packer_cache
+linux*
+exherbo*
+test
+archlinux

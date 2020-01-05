@@ -1,0 +1,92 @@
+{
+  "variables": {
+    "vm_name": "archlinux-vm",
+    "iso_url": "http://cznic.dl.osdn.jp/storage/g/s/sy/systemrescuecd/releases/6.0.3/systemrescuecd-6.0.3.iso",
+    "iso_checksum": "750382a087a2629b761fb96203b042aac6f9794401bffb9734af793d25d064e3",
+    "iso_checksum_type": "sha256",
+    "headless": "false",
+    "hostname": "dev-vm",
+    "ssh_fullname": "Developer",
+    "ssh_username": "root",
+    "ssh_password": "root"
+  },
+  "builders": [
+    {
+      "vm_name": "{{ user `vm_name` }}",
+      "headless": "{{ user `headless` }}",
+      "accelerator": "kvm",
+      "output_directory": "dist",
+      "type": "qemu",
+      "disk_interface": "virtio",
+      "disk_size": 3000,
+      "format": "raw",
+      "net_device": "virtio-net",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_wait_timeout": "60m",
+      "boot_command": [
+        "<enter><wait25>",
+        "echo {{ user `ssh_username` }}:{{ user `ssh_password` }} | chpasswd<enter>"
+      ],
+      "shutdown_command": "shutdown -P now",
+      "boot_wait": "3s",
+      "qemu_binary": "qemu-system-x86_64",
+      "qemuargs": [
+        [
+          "-cpu",
+          "host"
+        ],
+        [
+          "-smp",
+          "4"
+        ],
+        [
+          "-m",
+          "4096"
+        ]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "scripts/install/first-boot.sh",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "expect_disconnect": false,
+      "scripts": [
+        "scripts/prepare/create-disk.sh",
+        "scripts/prepare/mount-disk.sh",
+        "scripts/prepare/install-rootfs.sh",
+        "scripts/prepare/setup-fstab.sh",
+        "scripts/prepare/create-first-boot-script.sh",
+        "scripts/prepare/cleanup.sh"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "/tmp/Image",
+      "destination": "dist/Image",
+      "direction": "download"
+    },
+    {
+      "type": "file",
+      "source": "/tmp/initramfs-linux-fallback.img",
+      "destination": "dist/initramfs-linux-fallback.img",
+      "direction": "download"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "shell-local",
+        "script": "scripts/run-image.sh"
+      }
+    ]
+  ]
+}
