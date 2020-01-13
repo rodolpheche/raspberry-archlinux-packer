@@ -1,8 +1,6 @@
 # Raspberry Archlinux
 
-Build & Deploy Archlinux image on Raspberry PI with preinstalled Docker Swarm cluster
-
-## Architecture
+Build & Deploy Archlinux image on Raspberry PI 3B+ with Docker preinstalled
 
 ## Requirements
 
